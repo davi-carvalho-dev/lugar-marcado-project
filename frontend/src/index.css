@@ -1,0 +1,43 @@
+@import "tailwindcss"; 
+
+@theme {
+
+  --color-background: #1C1814;      /* espresso: fundo geral */
+  --color-surface: #26201B;         /* cards, inputs */
+  --color-elevated: #322A23;        /* modais, cards em destaque */
+  --color-border: #40362D;          /* bordas, divisórias */
+  --color-primary: #C8A27C;         /* latão/âmbar: marca, CTA */
+  --color-primary-hover: #D6B48F;   /* hover */
+  --color-primary-dark: #A8835E;    /* selecionado, CTA pressionado */
+  --color-text-main: #F2EBE3;       /* linho: texto principal */
+  --color-text-muted: #B3A797;      /* texto secundário */
+
+  --font-inter: 'inter-uniquifier', system-ui, -apple-system, sans-serif;
+  --font-jmono: 'jetbrains-mono-uniquifier', ui-monospace, monospace;
+}
+html{
+    box-sizing: border-box;
+    background-color: var(--color-background);
+    font-family: var(--font-inter);
+    color:var(--color-text-main);
+    scrollbar-width: none;           
+}
+html::-webkit-scrollbar {
+  display: none;    
+}
+
+/* Fonts */
+
+.inter-uniquifier{
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.jetbrains-mono-uniquifier {
+  font-family: "JetBrains Mono", monospace;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
