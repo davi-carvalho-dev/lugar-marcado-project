@@ -28,7 +28,7 @@ Projeto desenvolvido para a avaliação **da disciplina Desenvolvimento Backend 
 - React Router
 - Font Awesome
 **Backend**
-- Java 21
+- Java 26
 - Spring Boot (Spring Web, Spring Data JPA, Bean Validation)
 - MySQL 8
 **Infraestrutura**
