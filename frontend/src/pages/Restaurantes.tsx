@@ -20,8 +20,11 @@ export default function Restaurantes() {
   }
 
   useEffect(() => {
-    buscar();
-  }, []);
+  listarRestaurantes()
+    .then(setRestaurantes)
+    .catch((e) => setErro(e.message))
+    .finally(() => setCarregando(false));
+}, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
