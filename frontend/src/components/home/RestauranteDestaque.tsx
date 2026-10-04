@@ -1,8 +1,21 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import CardRestaurante from "../CardRestaurante";
-import { restaurantesMock } from "../../services/restaurantesMock";
+import { listarRestaurantes } from "../../services/api";
+import type { Restaurante } from "../../types/Restaurantes";
 
 export default function RestauranteDestaque() {
+  const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    listarRestaurantes()
+      .then((dados) => setRestaurantes(dados.slice(0, 3)))
+      .catch((e) => setErro(e.message))
+      .finally(() => setCarregando(false));
+  }, []);
+
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-6">
@@ -20,10 +33,13 @@ export default function RestauranteDestaque() {
           >
             Ver todos <i className="fa-solid fa-arrow-right text-xs"></i>
           </Link>
-        </div>
+      </div>
+
+        {carregando && <p className="text-text-muted">Carregando restaurantes...</p>}
+        {erro && <p className="text-red-400">{erro}</p>}
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {restaurantesMock.map((restaurante) => (
+          {restaurantes.map((restaurante) => (
             <CardRestaurante key={restaurante.id} restaurante={restaurante} />
           ))}
         </div>
