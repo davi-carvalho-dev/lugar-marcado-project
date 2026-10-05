@@ -4,7 +4,7 @@ import Home from './pages/Home'
 import Restaurantes from './pages/Restaurantes'
 import RestauranteDetalhe from './pages/RestauranteDetalhe'
 import MinhasReservas from './pages/MinhasReservas'
-// import Login from './pages/Login'
+import Login from './pages/Login'
 
 export default function App() {
   return (
@@ -14,7 +14,7 @@ export default function App() {
         <Route path="/restaurantes" element={<Restaurantes />} />
         <Route path="/restaurantes/:id" element={<RestauranteDetalhe />} />
         {<Route path="/minhas-reservas" element={<MinhasReservas />} /> }
-        {/* <Route path="/login" element={<Login />} /> */}
+        { <Route path="/login" element={<Login />} />}
       </Route>
     </Routes>
   )
