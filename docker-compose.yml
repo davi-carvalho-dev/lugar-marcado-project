@@ -1,3 +1,4 @@
+# Sobe a aplicação completa: banco (MySQL), backend (Spring Boot) e frontend (React + Nginx)
 services:
   mysql:
     image: mysql:8.4
@@ -11,6 +12,34 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    # O backend só sobe depois que o MySQL estiver respondendo
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    container_name: lugar-marcado-backend
+    environment:
+      # Dentro do Docker, o banco é acessado pelo nome do serviço ("mysql"), não por localhost
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/lugar_marcado
+      SPRING_DATASOURCE_USERNAME: lugar
+      SPRING_DATASOURCE_PASSWORD: lugar123
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: lugar-marcado-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:
