@@ -1,0 +1,263 @@
+openapi: 3.0.3
+info:
+  title: Lugar Marcado API
+  version: 1.0.0
+  description: >
+    API REST do Lugar Marcado, sistema de reserva de mesas em restaurantes.
+    Permite cadastro e login de clientes, consulta de restaurantes e criação,
+    consulta e cancelamento de reservas.
+  contact:
+    name: Davi Bonfim de Carvalho
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local (Docker)
+tags:
+  - name: Autenticação
+  - name: Restaurantes
+  - name: Reservas
+
+paths:
+  /auth/cadastro:
+    post:
+      tags: [Autenticação]
+      summary: Cria a conta de um cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CadastroRequest" }
+      responses:
+        "201":
+          description: Conta criada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteResponse" }
+        "400": { $ref: "#/components/responses/DadosInvalidos" }
+        "409":
+          description: Já existe uma conta com esse e-mail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Erro" }
+
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      summary: Valida e-mail e senha do cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Login realizado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteResponse" }
+        "400": { $ref: "#/components/responses/DadosInvalidos" }
+        "401":
+          description: E-mail ou senha inválidos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Erro" }
+
+  /restaurantes:
+    get:
+      tags: [Restaurantes]
+      summary: Lista os restaurantes
+      parameters:
+        - name: bairro
+          in: query
+          required: false
+          description: Filtra pelo bairro (sem diferenciar maiúsculas e minúsculas)
+          schema: { type: string, example: Urca }
+      responses:
+        "200":
+          description: Lista de restaurantes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Restaurante" }
+
+  /restaurantes/{id}:
+    get:
+      tags: [Restaurantes]
+      summary: Busca um restaurante pelo id
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Restaurante encontrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Restaurante" }
+        "404":
+          description: Restaurante não encontrado
+
+  /reservas:
+    post:
+      tags: [Reservas]
+      summary: Cria uma reserva
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReservaRequest" }
+      responses:
+        "201":
+          description: Reserva criada com status CONFIRMADA
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reserva" }
+        "400": { $ref: "#/components/responses/DadosInvalidos" }
+        "404":
+          description: Restaurante não encontrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Erro" }
+    get:
+      tags: [Reservas]
+      summary: Lista as reservas
+      parameters:
+        - name: email
+          in: query
+          required: false
+          description: Retorna apenas as reservas desse cliente, ordenadas por data
+          schema: { type: string, format: email, example: davi@email.com }
+      responses:
+        "200":
+          description: Lista de reservas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Reserva" }
+
+  /reservas/{id}:
+    get:
+      tags: [Reservas]
+      summary: Busca uma reserva pelo id
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Reserva encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reserva" }
+        "404":
+          description: Reserva não encontrada
+
+  /reservas/{id}/cancelar:
+    patch:
+      tags: [Reservas]
+      summary: Cancela uma reserva (o registro é mantido com status CANCELADA)
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Reserva cancelada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reserva" }
+        "400":
+          description: Não é possível cancelar uma reserva que já passou
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Erro" }
+        "404":
+          description: Reserva não encontrada
+        "409":
+          description: Reserva já está cancelada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Erro" }
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64, example: 1 }
+
+  responses:
+    DadosInvalidos:
+      description: Dados inválidos (campo vazio, e-mail inválido, data no passado, quantidade fora do limite)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Erro" }
+
+  schemas:
+    CadastroRequest:
+      type: object
+      required: [nome, email, senha]
+      properties:
+        nome: { type: string, example: Davi Carvalho }
+        email: { type: string, format: email, example: davi@email.com }
+        senha: { type: string, minLength: 6, example: "123456" }
+
+    LoginRequest:
+      type: object
+      required: [email, senha]
+      properties:
+        email: { type: string, format: email, example: davi@email.com }
+        senha: { type: string, example: "123456" }
+
+    ClienteResponse:
+      type: object
+      description: Dados do cliente. A senha nunca é devolvida.
+      properties:
+        id: { type: integer, format: int64, example: 1 }
+        nome: { type: string, example: Davi Carvalho }
+        email: { type: string, format: email, example: davi@email.com }
+
+    Restaurante:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 1 }
+        nome: { type: string, example: Casa Brasa }
+        descricao: { type: string, example: Cortes na parrilla e ambiente à luz de velas. }
+        culinaria: { type: string, example: Carnes }
+        bairro: { type: string, example: Centro }
+        cidade: { type: string, example: Rio de Janeiro }
+        faixaPreco: { type: integer, minimum: 1, maximum: 4, example: 3 }
+        avaliacao: { type: number, format: double, example: 4.7 }
+        imagemUrl: { type: string, example: /image/casa-brasa.jpg }
+
+    ReservaRequest:
+      type: object
+      required: [restauranteId, nomeCliente, emailCliente, dataHora, quantidadePessoas]
+      properties:
+        restauranteId: { type: integer, format: int64, example: 1 }
+        nomeCliente: { type: string, example: Davi }
+        emailCliente: { type: string, format: email, example: davi@email.com }
+        dataHora:
+          type: string
+          format: date-time
+          description: Precisa ser uma data e hora futuras
+          example: "2026-10-10T20:00:00"
+        quantidadePessoas: { type: integer, minimum: 1, maximum: 20, example: 2 }
+
+    Reserva:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 1 }
+        restaurante: { $ref: "#/components/schemas/Restaurante" }
+        nomeCliente: { type: string, example: Davi }
+        emailCliente: { type: string, format: email, example: davi@email.com }
+        dataHora: { type: string, format: date-time, example: "2026-10-10T20:00:00" }
+        quantidadePessoas: { type: integer, example: 2 }
+        status: { type: string, enum: [CONFIRMADA, CANCELADA], example: CONFIRMADA }
+        criadaEm: { type: string, format: date-time, example: "2026-10-04T11:45:28" }
+
+    Erro:
+      type: object
+      description: Formato padrão de erro do Spring Boot
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer, example: 400 }
+        error: { type: string, example: Bad Request }
+        message: { type: string, example: A reserva precisa ser para uma data futura }
+        path: { type: string, example: /reservas }
